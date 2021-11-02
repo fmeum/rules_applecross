@@ -133,6 +133,7 @@ def _apple_cross_toolchain_impl(rctx):
     ))
 
     if rctx.attr.xcode_urls:
+        rctx.report_progress("Fetching XCode SDK")
         rctx.download_and_extract(
             url = rctx.attr.xcode_urls,
             sha256 = rctx.attr.xcode_sha256,
@@ -140,6 +141,7 @@ def _apple_cross_toolchain_impl(rctx):
         )
 
     if rctx.attr.clang_urls:
+        rctx.report_progress("Fetching LLVM distribution")
         rctx.download_and_extract(
             url = rctx.attr.clang_urls,
             sha256 = rctx.attr.clang_sha256,
@@ -161,6 +163,7 @@ def _apple_cross_toolchain_impl(rctx):
         rctx.delete("tmp_clang")
 
     if rctx.attr.swift_urls:
+        rctx.report_progress("Fetching Swift distribution")
         rctx.download_and_extract(
             url = rctx.attr.swift_urls,
             sha256 = rctx.attr.swift_sha256,
@@ -176,6 +179,7 @@ def _apple_cross_toolchain_impl(rctx):
         ])
         rctx.delete("tmp_swift")
 
+    rctx.report_progress("Fetching ported tools")
     rctx.download_and_extract(
         url = ["https://github.com/apple-cross-toolchain/ci/releases/download/0.0.4/ported-tools-linux-x86_64.tar.xz"],
         sha256 = "c8d410d13f4f3bd076c69647999a3fb0dea7d4f095c1cde8466d9e0bba5e0deb",
