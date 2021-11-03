@@ -6,21 +6,13 @@ load(
 
 def _compile_cc_file(rctx, developer_dir, src_name, out_name):
     rctx.report_progress("Compiling {}".format(paths.basename(src_name)))
-    env = rctx.os.environ
-    if developer_dir:
-        bin_root = developer_dir + "/Toolchains/XcodeDefault.xctoolchain/usr/bin"
-    else:
-        bin_root = rctx.which("clang").dirname
+    bin_root = developer_dir + "/Toolchains/XcodeDefault.xctoolchain/usr/bin"
     cc = "{}/clang".format(bin_root)
     result = rctx.execute([
-        "env",
-        "-i",
         cc,
-    ] + ([
         "-B",
         bin_root,
         "-fuse-ld=lld",
-    ] if developer_dir else []) + [
         "-std=c++11",
         "-lstdc++",
         "-O3",
@@ -83,12 +75,9 @@ def _apple_cross_toolchain_impl(rctx):
     repo_path = str(rctx.path(""))
     relative_path_prefix = "external/{}/".format(rctx.name)
     toolchain_path_prefix = relative_path_prefix
-    developer_dir = ""
-    tools_path_prefix = ""
     xcode_toolchain_bindir = "Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/"
-    if rctx.attr.xcode_urls:
-        developer_dir = "Xcode.app/Contents/Developer"
-        tools_path_prefix = toolchain_path_prefix + xcode_toolchain_bindir
+    developer_dir = "Xcode.app/Contents/Developer"
+    tools_path_prefix = toolchain_path_prefix + xcode_toolchain_bindir
 
     substitutions = {
         "%{cc}": relative_path_prefix + "wrapped_clang",
@@ -132,12 +121,11 @@ def _apple_cross_toolchain_impl(rctx):
         paths["@bazel_tools//tools/objc:libtool_check_unique.cc"],
     ))
 
-    if rctx.attr.xcode_urls:
-        rctx.download_and_extract(
-            url = rctx.attr.xcode_urls,
-            sha256 = rctx.attr.xcode_sha256,
-            stripPrefix = rctx.attr.xcode_strip_prefix,
-        )
+    rctx.download_and_extract(
+        url = rctx.attr.xcode_urls,
+        sha256 = rctx.attr.xcode_sha256,
+        stripPrefix = rctx.attr.xcode_strip_prefix,
+    )
 
     if rctx.attr.clang_urls:
         rctx.download_and_extract(
@@ -259,6 +247,7 @@ def _apple_cross_toolchain_impl(rctx):
 apple_cross_toolchain = repository_rule(
     attrs = {
         "xcode_urls": attr.string_list(
+            mandatory = True,
         ),
         "xcode_sha256": attr.string(
             mandatory = False,
@@ -283,6 +272,5 @@ apple_cross_toolchain = repository_rule(
             mandatory = False,
         ),
     },
-    environ = ["PATH"],
     implementation = _apple_cross_toolchain_impl,
 )
